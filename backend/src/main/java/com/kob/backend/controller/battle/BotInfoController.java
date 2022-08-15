@@ -1,14 +1,12 @@
-package com.kob.backend.controller.pk;
+package com.kob.backend.controller.battle;
 
 import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/pk/")
+@RequestMapping("/battle/")
 public class BotInfoController {
 
   @RequestMapping("getbotinfo/")
