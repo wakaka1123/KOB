@@ -41,12 +41,12 @@
             >
               {{ $store.state.user.username }}
             </a>
-            <ul class="dropdown-menu">
+            <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
               <li>
                 <router-link
                   class="dropdown-item"
                   :to="{ name: 'user_bots_index' }"
-                  >My Bots</router-link
+                  >My Bot</router-link
                 >
               </li>
               <li><hr class="dropdown-divider" /></li>
