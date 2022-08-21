@@ -1,84 +1,324 @@
 <template>
-  <ContentField> My Bots</ContentField>
+  <div class="container">
+    <div class="row">
+      <div class="col-3">
+        <div class="card" style="margin-top: 20px">
+          <div class="card-body">
+            <img :src="$store.state.user.photo" alt="" style="width: 100%" />
+          </div>
+        </div>
+      </div>
+      <div class="col-9">
+        <div class="card" style="margin-top: 20px">
+          <div class="card-header">
+            <span style="font-size: 130%">My Bot</span>
+            <button
+              type="button"
+              class="btn btn-primary float-end"
+              data-bs-toggle="modal"
+              data-bs-target="#add-bot-btn"
+            >
+              Create a bot
+            </button>
+            <!-- Modal -->
+            <div class="modal fade" id="add-bot-btn" tabindex="-1">
+              <div class="modal-dialog modal-xl">
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <h5 class="modal-title">Create a bot</h5>
+                  </div>
+                  <div class="modal-body">
+                    <div class="mb-3">
+                      <label for="add-bot-title" class="form-label"
+                        >Title</label
+                      >
+                      <input
+                        v-model="botadd.title"
+                        type="text"
+                        class="form-control"
+                        id="add-bot-title"
+                        placeholder="enter bot title"
+                      />
+                    </div>
+                    <div class="mb-3">
+                      <label for="add-bot-description" class="form-label"
+                        >Bot description</label
+                      >
+                      <textarea
+                        v-model="botadd.description"
+                        class="form-control"
+                        id="add-bot-description"
+                        rows="3"
+                        placeholder="enter bot description"
+                      ></textarea>
+                    </div>
+                    <div class="mb-3">
+                      <label for="add-bot-code" class="form-label">Code</label>
+                      <VAceEditor
+                        v-model:value="botadd.content"
+                        @init="editorInit"
+                        lang="c_cpp"
+                        theme="textmate"
+                        style="height: 300px"
+                      />
+                    </div>
+                  </div>
+                  <div class="modal-footer">
+                    <div class="error-message">{{ botadd.error_message }}</div>
+                    <button
+                      type="button"
+                      class="btn btn-primary"
+                      @click="add_bot"
+                    >
+                      Submit
+                    </button>
+                    <button
+                      type="button"
+                      class="btn btn-secondary"
+                      data-bs-dismiss="modal"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="card-body">
+            <table class="table table-hover">
+              <thead>
+                <tr>
+                  <th>title</th>
+                  <th>creation time</th>
+                  <th>operation</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="bot in bots" :key="bot.id">
+                  <td>{{ bot.title }}</td>
+                  <td>{{ bot.createtime }}</td>
+                  <td>
+                    <button
+                      type="button"
+                      class="btn btn-secondary"
+                      style="margin-right: 10px"
+                      data-bs-toggle="modal"
+                      :data-bs-target="'#update-bot-modal-' + bot.id"
+                    >
+                      modify
+                    </button>
+                    <button
+                      type="button"
+                      class="btn btn-danger"
+                      @click="remove_bot(bot)"
+                    >
+                      delete
+                    </button>
+                    <!-- Modal -->
+                    <div
+                      class="modal fade"
+                      :id="'update-bot-modal-' + bot.id"
+                      tabindex="-1"
+                    >
+                      <div class="modal-dialog modal-xl">
+                        <div class="modal-content">
+                          <div class="modal-header">
+                            <h5 class="modal-title">Create a bot</h5>
+                          </div>
+                          <div class="modal-body">
+                            <div class="mb-3">
+                              <label for="add-bot-title" class="form-label"
+                                >Title</label
+                              >
+                              <input
+                                v-model="bot.title"
+                                type="text"
+                                class="form-control"
+                                id="add-bot-title"
+                                placeholder="enter bot title"
+                              />
+                            </div>
+                            <div class="mb-3">
+                              <label
+                                for="add-bot-description"
+                                class="form-label"
+                                >Bot description</label
+                              >
+                              <textarea
+                                v-model="bot.description"
+                                class="form-control"
+                                id="add-bot-description"
+                                rows="3"
+                                placeholder="enter bot description"
+                              ></textarea>
+                            </div>
+                            <div class="mb-3">
+                              <label for="add-bot-code" class="form-label"
+                                >Code</label
+                              >
+                              <VAceEditor
+                                v-model:value="bot.content"
+                                @init="editorInit"
+                                lang="c_cpp"
+                                theme="textmate"
+                                style="height: 300px"
+                              />
+                            </div>
+                          </div>
+                          <div class="modal-footer">
+                            <div class="error-message">
+                              {{ bot.error_message }}
+                            </div>
+                            <button
+                              type="button"
+                              class="btn btn-primary"
+                              @click="update_bot(bot)"
+                            >
+                              Save Changes
+                            </button>
+                            <button
+                              type="button"
+                              class="btn btn-secondary"
+                              data-bs-dismiss="modal"
+                            >
+                              Cancel
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 </template>
 
 <script>
-import ContentField from "../../../components/ContentField.vue";
+import { ref, reactive } from "vue";
 import $ from "jquery";
 import { useStore } from "vuex";
+import { Modal } from "bootstrap/dist/js/bootstrap";
+import { VAceEditor } from "vue3-ace-editor";
+import ace from "ace-builds";
 
 export default {
-  components: { ContentField },
+  components: {
+    VAceEditor,
+  },
   setup() {
+    ace.config.set(
+      "basePath",
+      "https://cdn.jsdelivr.net/npm/ace-builds@" +
+        require("ace-builds").version +
+        "/src-noconflict/"
+    );
+
     const store = useStore();
-    // $.ajax({
-    //   url: "http://localhost:3000/user/bots/add/",
-    //   type: "POST",
-    //   data: {
-    //     title: "Bot title",
-    //     description: "Bot description",
-    //     content: "Bot content",
-    //   },
-    //   headers: {
-    //     Authorization: "Bearer " + store.state.user.token,
-    //   },
-    //   success(resp) {
-    //     console.log(resp);
-    //   },
-    //   error(resp) {
-    //     console.log(resp);
-    //   },
-    // });
-    // $.ajax({
-    //   url: "http://localhost:3000/user/bots/remove/",
-    //   type: "POST",
-    //   data: {
-    //     bot_id: 22,
-    //   },
-    //   headers: {
-    //     Authorization: "Bearer " + store.state.user.token,
-    //   },
-    //   success(resp) {
-    //     console.log(resp);
-    //   },
-    //   error(resp) {
-    //     console.log(resp);
-    //   },
-    // });
-    // $.ajax({
-    //   url: "http://localhost:3000/user/bots/update/",
-    //   type: "POST",
-    //   data: {
-    //     bot_id: 24,
-    //     title: "Bot title23",
-    //     description: "Bot description23",
-    //     content: "Bot content23",
-    //   },
-    //   headers: {
-    //     Authorization: "Bearer " + store.state.user.token,
-    //   },
-    //   success(resp) {
-    //     console.log(resp);
-    //   },
-    //   error(resp) {
-    //     console.log(resp);
-    //   },
-    // });
-    $.ajax({
-      url: "http://localhost:3000/user/bots/getlist/",
-      type: "get",
-      headers: {
-        Authorization: "Bearer " + store.state.user.token,
-      },
-      success(resp) {
-        console.log(resp);
-      },
-      error(resp) {
-        console.log(resp);
-      },
+    let bots = ref([]);
+
+    const botadd = reactive({
+      title: "",
+      description: "",
+      content: "",
+      error_message: "",
     });
+
+    const refresh_bots = () => {
+      $.ajax({
+        url: "http://localhost:3000/user/bots/getlist/",
+        type: "get",
+        headers: {
+          Authorization: "Bearer " + store.state.user.token,
+        },
+        success(resp) {
+          bots.value = resp;
+        },
+      });
+    };
+    refresh_bots();
+
+    const add_bot = () => {
+      (botadd.error_message = ""),
+        $.ajax({
+          url: "http://localhost:3000/user/bots/add/",
+          type: "post",
+          data: {
+            title: botadd.title,
+            description: botadd.description,
+            content: botadd.content,
+          },
+          headers: {
+            Authorization: "Bearer " + store.state.user.token,
+          },
+          success(resp) {
+            if (resp.error_message === "success") {
+              (botadd.title = ""),
+                (botadd.description = ""),
+                (botadd.content = ""),
+                Modal.getInstance("#add-bot-btn").hide();
+              refresh_bots();
+            } else {
+              botadd.error_message = resp.error_message;
+            }
+          },
+        });
+    };
+
+    const update_bot = (bot) => {
+      botadd.error_message = "";
+      $.ajax({
+        url: "http://localhost:3000/user/bots/update/",
+        type: "post",
+        data: {
+          bot_id: bot.id,
+          title: bot.title,
+          description: bot.description,
+          content: bot.content,
+        },
+        headers: {
+          Authorization: "Bearer " + store.state.user.token,
+        },
+        success(resp) {
+          if (resp.error_message === "update success") {
+            Modal.getInstance("#update-bot-modal-" + bot.id).hide();
+            refresh_bots();
+          } else {
+            botadd.error_message = resp.error_message;
+          }
+        },
+      });
+    };
+
+    const remove_bot = (bot) => {
+      $.ajax({
+        url: "http://localhost:3000/user/bots/remove/",
+        type: "post",
+        data: {
+          bot_id: bot.id,
+        },
+        headers: {
+          Authorization: "Bearer " + store.state.user.token,
+        },
+        success(resp) {
+          if (resp.error_message === "success") {
+            refresh_bots();
+          }
+        },
+      });
+    };
+
+    return { bots, botadd, add_bot, update_bot, remove_bot };
   },
 };
 </script>
 
-<style scoped></style>
+<style scoped>
+div.error-message {
+  color: red;
+}
+</style>
